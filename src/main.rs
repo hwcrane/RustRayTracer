@@ -7,7 +7,7 @@ extern crate indicatif;
 use sphere::Sphere;
 use ray::Ray;
 use vec3::Vec3;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 2000;
@@ -19,6 +19,9 @@ const FOCAL_LENGTH: f64 = 1.0;
 
 fn main() {
     let bar = ProgressBar::new((IMAGE_HEIGHT / 10) as u64);
+    bar.set_style(ProgressStyle::default_bar()
+    .template("{spinner:.green} [{elapsed_precise}] {wide_bar:.cyan/blue} {percent}% ({eta})")
+    .progress_chars("##-"));
 
     let origin = Vec3::new(0.0, 0.0, 0.0);
     let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
