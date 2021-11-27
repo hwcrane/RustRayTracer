@@ -2,10 +2,12 @@ mod vec3;
 mod ray;
 mod sphere;
 extern crate image;
+extern crate indicatif;
 
 use sphere::Sphere;
 use ray::Ray;
 use vec3::Vec3;
+use indicatif::ProgressBar;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 2000;
@@ -16,6 +18,8 @@ const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
 const FOCAL_LENGTH: f64 = 1.0;
 
 fn main() {
+    let bar = ProgressBar::new((IMAGE_HEIGHT / 10) as u64);
+
     let origin = Vec3::new(0.0, 0.0, 0.0);
     let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
     let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
@@ -29,9 +33,10 @@ fn main() {
         let r = Ray::new(origin, lower_left_corner + u*horizontal + v*vertical - origin);
         let colour = r.ray_colour();
         *pixel = image::Rgb([(colour.x * 255.0) as u8, (colour.y * 255.) as u8, (colour.z * 255.)as u8]);
+        if y % 10 == 0 && x == 0 {
+            bar.inc(1)
+        }
     } 
-    
-
-
+    bar.finish();
     imgbuf.save("out.png").unwrap();
 }
