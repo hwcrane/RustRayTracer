@@ -1,6 +1,7 @@
 use std::ops;
+use crate::{random_f64_range, random_f64};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -26,8 +27,26 @@ impl Vec3 {
         self / self.length()
     }
 
-    pub fn dot(vec1: Vec3, vec2: Vec3) -> f64 {
+    pub fn dot(vec1: &Vec3, vec2: &Vec3) -> f64 {
         vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z
+    }
+
+    pub fn random_range(max: f64, min:f64) -> Vec3{
+        Vec3::new(random_f64_range(max, min), random_f64_range(max, min), random_f64_range(max, min))
+    }
+
+    pub fn random() -> Vec3{
+        Vec3::new(random_f64(), random_f64(), random_f64())
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        loop {
+            let p = Vec3::random_range(-1., 1.);
+            if p.length_squared() >= 1. {
+                continue
+            }
+            return p
+        }
     }
 }
 
@@ -90,5 +109,13 @@ impl ops::Sub for Vec3 {
 
     fn sub(self, other: Vec3) -> Vec3{
         self + -other
+    }
+}
+
+impl ops::AddAssign for Vec3 {
+    fn add_assign(&mut self, other: Vec3){
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
     }
 }

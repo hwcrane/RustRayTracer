@@ -1,45 +1,89 @@
 mod vec3;
 mod ray;
 mod sphere;
+mod hittable;
+mod hittable_list;
+mod camera;
+mod radom;
 extern crate image;
 extern crate indicatif;
+extern crate rayon;
 
+use rayon::prelude::*;
+use radom::{random_f64, random_f64_range};
+use camera::Camera;
+use hittable_list::HittableList;
 use sphere::Sphere;
 use ray::Ray;
 use vec3::Vec3;
 use indicatif::{ProgressBar, ProgressStyle};
+use image::{ImageBuffer, Rgb};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 2000;
+const IMAGE_WIDTH: u32 = 400;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
+const SAMPLES_PER_PIXEL: u32 = 100;
+const MAX_RAY_DEPTH: u32 = 50;
 
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
 const FOCAL_LENGTH: f64 = 1.0;
 
 fn main() {
-    let bar = ProgressBar::new((IMAGE_HEIGHT / 10) as u64);
+    // Progress Bar
+    let bar = ProgressBar::new((IMAGE_HEIGHT* IMAGE_WIDTH) as u64);
     bar.set_style(ProgressStyle::default_bar()
     .template("{spinner:.green} [{elapsed_precise}] {wide_bar:.cyan/blue} {percent}% ({eta})")
     .progress_chars("##-"));
 
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner = origin - horizontal/2.0  - vertical/2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+    // World
+
+    let mut world = HittableList::default();
+    world.add(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)));
+    world.add(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100.)));
+
+    // Camera
+
+    let camera = Camera::new(ASPECT_RATIO, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, FOCAL_LENGTH);
     
-    let mut imgbuf = image::ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
-    
+    // Render
+
+    let mut imgbuf = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
+
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let u = (IMAGE_WIDTH - x) as f64 / (IMAGE_WIDTH - 1) as f64;
-        let v = (IMAGE_HEIGHT - y) as f64 / (IMAGE_HEIGHT - 1) as f64;
-        let r = Ray::new(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-        let colour = r.ray_colour();
-        *pixel = image::Rgb([(colour.x * 255.0) as u8, (colour.y * 255.) as u8, (colour.z * 255.)as u8]);
-        if y % 10 == 0 && x == 0 {
-            bar.inc(1)
+        let mut colour = Vec3::new(0., 0., 0.);
+
+        for _i in 0..SAMPLES_PER_PIXEL {
+            let u = ((IMAGE_WIDTH - x) as f64 + random_f64()) / (IMAGE_WIDTH - 1) as f64;
+            let v = ((IMAGE_HEIGHT - y) as f64 + random_f64()) / (IMAGE_HEIGHT - 1) as f64;
+            let r = camera.get_ray(u, v);
+            colour += r.ray_colour(&world, MAX_RAY_DEPTH);
         }
+        *pixel = make_colour(colour, SAMPLES_PER_PIXEL);
+        
+        bar.inc(1)
+        
     } 
     bar.finish();
     imgbuf.save("out.png").unwrap();
+}
+
+fn make_colour(colour: Vec3, samples_per_pixel: u32) -> Rgb<u8> {
+    let mut r = colour.x;
+    let mut g = colour.y;
+    let mut b = colour.z;
+
+    let scale = 1. / samples_per_pixel as f64;
+    r*=scale;
+    g*=scale;
+    b*=scale;
+
+    Rgb([(clamp(r, 0., 1.) * 255.) as u8, (clamp(g, 0., 1.) * 255.) as u8, (clamp(b, 0., 1.) * 255.) as u8])
+
+}
+
+fn clamp(x: f64, min: f64, max: f64) -> f64{
+    if x < min {return min}
+    if x > max {return max}
+    x
 }

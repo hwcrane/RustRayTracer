@@ -1,8 +1,11 @@
 use crate::Vec3;
-use crate::Sphere;
+use crate::hittable::{Hittable};
+use crate::HittableList;
+
+use std::f64::INFINITY;
 pub struct Ray{
-    origin: Vec3,
-    direction: Vec3,
+    pub origin: Vec3,
+    pub direction: Vec3,
 }
 
 impl Ray {
@@ -15,26 +18,20 @@ impl Ray {
         self.origin + t * self.direction
     }
 
-    pub fn ray_colour(&self) -> Vec3{
-        let t = self.hit_sphere( Sphere::new(Vec3::new(0., 0., -1.), 0.5));
-        if t > 0.{
-            let n = (self.at(t) - Vec3::new(0., 0., -1.)).unit();
-            return 0.5 * Vec3::new(n.x + 1., n.y + 1., n.z + 1.)
+    pub fn ray_colour(&self, world: &HittableList, depth: u32) -> Vec3{
+        
+        if depth <= 0{
+            return Vec3::new(0., 0., 0.);
+        }
+
+        if let Some(rec) = world.hit(self, 0., INFINITY){
+            let target = rec.normal + Vec3::random_in_unit_sphere();
+            return 0.5 * Ray::new(rec.point, target - rec.point).ray_colour(world, depth - 1);
         }
         let unit_direction = self.direction.unit();
-        let t = 0.5 * (unit_direction.y + 1.0);
-        (1.0 - t) * Vec3{x: 1.0, y: 1.0, z: 1.0} + t * Vec3{x: 0.5, y: 0.7, z: 1.0}
+        let t = 0.5 * (unit_direction.y + 1.);
+        (1. - t) * Vec3::new(1., 1., 1.) + t * Vec3::new(0.5, 0.7, 1.)
     }
 
-    fn hit_sphere(&self, sphere: Sphere) -> f64{
-        let oc = self.origin - sphere.center;
-        let a = Vec3::dot(self.direction, self.direction);
-        let b = 2. * Vec3::dot(oc, self.direction);
-        let c = Vec3::dot(oc, oc) - sphere.radius * sphere.radius;
-        let descriminant = b * b - 4. * a * c;
-        if descriminant < 0. {
-            return -1.;
-        }
-        (-b - descriminant.sqrt()) / (2. * a)
-    }
+    
 }
