@@ -48,6 +48,27 @@ impl Vec3 {
             return p
         }
     }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3::random_in_unit_sphere().unit()
+    }
+
+    pub fn random_in_hemisphere(normal: Vec3) -> Vec3{
+        let in_unit_sphere = Vec3::random_in_unit_sphere();
+        if Vec3::dot(&in_unit_sphere, &normal) > 0.{
+            return in_unit_sphere
+        }
+        -in_unit_sphere
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s  
+    }
+
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3{
+        v - 2. * Vec3::dot(&v, &n) * n
+    }
 }
 
 impl ops::Add for Vec3 {
@@ -117,5 +138,17 @@ impl ops::AddAssign for Vec3 {
         self.x += other.x;
         self.y += other.y;
         self.z += other.z;
+    }
+}
+
+impl ops::Mul for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3{
+        Vec3{
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z
+        }
     }
 }

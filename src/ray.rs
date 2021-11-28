@@ -24,9 +24,11 @@ impl Ray {
             return Vec3::new(0., 0., 0.);
         }
 
-        if let Some(rec) = world.hit(self, 0., INFINITY){
-            let target = rec.normal + Vec3::random_in_unit_sphere();
-            return 0.5 * Ray::new(rec.point, target - rec.point).ray_colour(world, depth - 1);
+        if let Some(rec) = world.hit(self, 0.001, INFINITY){
+            if let Some((scattered, attenuation)) = rec.mat_ptr.scatter(self, &rec){
+                return attenuation * scattered.ray_colour(world, depth - 1);
+            }
+            return Vec3::new(0., 0., 0.)
         }
         let unit_direction = self.direction.unit();
         let t = 0.5 * (unit_direction.y + 1.);
