@@ -1,12 +1,15 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::{Ray};
 
-#[derive(Default)]
+#[derive(Default)] 
 pub struct HittableList {
     list: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList{
+    pub fn new(list: Vec<Box<dyn Hittable>>) -> HittableList{
+        HittableList{list}
+    }
     pub fn add(&mut self, hittable: Box<dyn Hittable>){
         self.list.push(hittable);
     }

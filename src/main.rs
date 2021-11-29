@@ -21,6 +21,7 @@ use vec3::Vec3;
 use indicatif::{ProgressBar, ProgressStyle};
 use image::{ImageBuffer, Rgb};
 
+
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 1000;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
@@ -42,16 +43,16 @@ fn main() {
 
     let mut world = HittableList::default();
 
-    let material_ground = Material::Lambertian {albedo: Vec3::new(0.2, 0.2, 0.2)};
-    let material_center = Material::Lambertian {albedo: Vec3::new(0.2, 0.9, 0.3)};
-    let material_left = Material::Metal {albedo: Vec3::new(0.8, 0.8, 0.8), fuz: 0.3};
+
+    let material_ground = Material::Lambertian {albedo: Vec3::new(0.8, 0.8, 0.)};
+    let material_center = Material::Lambertian{albedo: Vec3::new(0.1, 0.2, 0.5)};
+    let material_left = Material::Dielectric{index_of_refraction: 1.5};
     let material_right = Material::Metal {albedo: Vec3::new(0.8, 0.6, 0.2), fuz: 1.};
 
-    world.add(Box::new(Sphere::new(Vec3::new(0., -100.5, -2.), 100., material_ground)));
-    world.add(Box::new(Sphere::new(Vec3::new(0., -0.5, -2.), 0.5, material_center)));
-    world.add(Box::new(Sphere::new(Vec3::new(1., 0., -2.), 0.5, material_left)));
-    world.add(Box::new(Sphere::new(Vec3::new(-1., 0., -2.), 0.5, material_right)));
-
+    world.add(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100., material_ground)));
+    world.add(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5, material_center)));
+    world.add(Box::new(Sphere::new(Vec3::new(1., 0., -1.), 0.5, material_left)));
+    world.add(Box::new(Sphere::new(Vec3::new(-1., 0., -1.), 0.5, material_right)));
 
 
     // Camera

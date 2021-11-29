@@ -1,11 +1,12 @@
 use crate::Ray;
 use crate::hittable::HitRecord;
 use crate::Vec3;
-
+use crate::radom::random_f64;
 #[derive(Copy, Clone)]
 pub enum Material{
     Lambertian {albedo: Vec3},
-    Metal {albedo: Vec3, fuz: f64}
+    Metal {albedo: Vec3, fuz: f64},
+    Dielectric {index_of_refraction: f64}
 }
 
 impl Material{
@@ -30,6 +31,36 @@ impl Material{
                 }
                 None
             }
+            Material::Dielectric {index_of_refraction} => {
+                let attenuation = Vec3::new(1., 1., 1.);
+                let refreaction_ratio = match rec.font_face {
+                    true => 1. / index_of_refraction,
+                    false => index_of_refraction
+                };
+                let unit_direction = r_in.direction.unit();
+
+                let cos_theta = f64::min(Vec3::dot(&-unit_direction, &rec.normal), 1.);
+                let sin_theta = (1. - cos_theta*cos_theta).sqrt();
+
+                let cannot_reflect = refreaction_ratio * sin_theta > 1.;
+                let direction: Vec3;
+
+                if cannot_reflect || reflectance(cos_theta, refreaction_ratio) > random_f64() {
+                    direction = Vec3::reflect(unit_direction, rec.normal);
+                } else {
+                    direction = Vec3::refract(unit_direction, rec.normal, refreaction_ratio);
+                }
+
+                let scattered = Ray::new(rec.point, direction);
+                
+                Some((scattered, attenuation))
+            }
         }
     }
+}
+
+fn reflectance(cosine: f64, ref_idx: f64) -> f64{
+    let mut r0 = (1. - ref_idx) / (1. + ref_idx);
+    r0 = r0*r0;
+    r0 + (1. - r0) * (1. - cosine).powf(5.)
 }
