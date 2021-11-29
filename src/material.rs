@@ -1,7 +1,7 @@
 use crate::Ray;
 use crate::hittable::HitRecord;
 use crate::Vec3;
-use crate::radom::random_f64;
+use crate::random::random_f64;
 #[derive(Copy, Clone)]
 pub enum Material{
     Lambertian {albedo: Vec3},

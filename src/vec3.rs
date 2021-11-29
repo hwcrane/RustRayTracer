@@ -20,7 +20,7 @@ impl Vec3 {
     }
 
     pub fn length(self) -> f64{
-        self.length_squared().sqrt()
+        (self.length_squared()).sqrt()
     }
 
     pub fn unit(self) -> Vec3 {
@@ -61,6 +61,16 @@ impl Vec3 {
         -in_unit_sphere
     }
 
+    pub fn random_in_unit_disk() -> Vec3{
+        loop {
+            let p = Vec3::new(random_f64_range(-1., 1.), random_f64_range(-1., 1.), 0.);
+            if p.length_squared() >= 1. {
+                continue
+            }
+            return p;
+        }
+    }
+
     pub fn near_zero(&self) -> bool {
         let s = 1e-8;
         self.x.abs() < s && self.y.abs() < s && self.z.abs() < s  
@@ -75,6 +85,14 @@ impl Vec3 {
         let r_out_perp = etai_over_etat * (uv + cos_theta * n);
         let r_out_parallel = -((1. - r_out_perp.length_squared()).abs()).sqrt() * n;
         r_out_perp + r_out_parallel
+    }
+
+    pub fn cross(vec1: &Vec3, vec2: &Vec3) -> Vec3 {
+        Vec3{
+            x: vec1.y * vec2.z - vec1.z * vec2.y,
+            y: vec1.z * vec2.x - vec1.x * vec2.z,
+            z: vec1.x * vec2.y - vec1.y * vec2.x
+        }
     }
 }
 
@@ -116,7 +134,11 @@ impl ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, divider: f64) -> Vec3{
-        self * (1.0 / divider)
+        Vec3{
+            x: self.x / divider,
+            y: self.y / divider,
+            z: self.z / divider
+        }
     }
 }
 

@@ -19,7 +19,7 @@ impl Sphere{
     }
 }
 
-impl Hittable for Sphere{
+impl<'a> Hittable for Sphere{
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         // Finds Roots
         let oc = r.origin - self.center;

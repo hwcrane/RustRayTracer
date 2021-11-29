@@ -7,9 +7,6 @@ pub struct HittableList {
 }
 
 impl HittableList{
-    pub fn new(list: Vec<Box<dyn Hittable>>) -> HittableList{
-        HittableList{list}
-    }
     pub fn add(&mut self, hittable: Box<dyn Hittable>){
         self.list.push(hittable);
     }
