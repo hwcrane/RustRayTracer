@@ -5,7 +5,7 @@ use crate::Vec3;
 #[derive(Copy, Clone)]
 pub enum Material{
     Lambertian {albedo: Vec3},
-    Metal {albedo: Vec3}
+    Metal {albedo: Vec3, fuz: f64}
 }
 
 impl Material{
@@ -21,9 +21,9 @@ impl Material{
                 let attenuation = albedo;
                 Some((scattered, attenuation))
             }
-            Material::Metal { albedo } => {
+            Material::Metal { albedo, fuz } => {
                 let reflected = Vec3::reflect(r_in.direction.unit(), rec.normal);
-                let scattered = Ray::new(rec.point, reflected);
+                let scattered = Ray::new(rec.point, reflected + fuz * Vec3::random_in_unit_sphere());
                 let attenuation = albedo;
                 if Vec3::dot(&scattered.direction, &rec.normal) > 0.{
                     return Some((scattered, attenuation))
