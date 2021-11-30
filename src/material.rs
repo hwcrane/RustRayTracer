@@ -2,9 +2,11 @@ use crate::Ray;
 use crate::hittable::HitRecord;
 use crate::Vec3;
 use crate::random::random_f64;
+use crate::texture::Texture;
+
 #[derive(Copy, Clone)]
 pub enum Material{
-    Lambertian {albedo: Vec3},
+    Lambertian {texture: Texture},
     Metal {albedo: Vec3, fuz: f64},
     Dielectric {index_of_refraction: f64}
 }
@@ -12,16 +14,16 @@ pub enum Material{
 impl Material{
     pub fn scatter (self, r_in: &Ray, rec: &HitRecord) -> Option<(Ray, Vec3)>{
         match self {
-            Material::Lambertian { albedo } => {
+            Material::Lambertian {texture} => {
                 let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
                 if scatter_direction.near_zero(){
                     scatter_direction = rec.normal
                 }
 
                 let scattered = Ray::new(rec.point, scatter_direction);
-                let attenuation = albedo;
+                let attenuation = texture.value(rec.u, rec.v, rec.point);
                 Some((scattered, attenuation))
-            }
+            } 
             Material::Metal { albedo, fuz } => {
                 let reflected = Vec3::reflect(r_in.direction.unit(), rec.normal);
                 let scattered = Ray::new(rec.point, reflected + fuz * Vec3::random_in_unit_sphere());

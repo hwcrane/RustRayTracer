@@ -96,6 +96,19 @@ impl Vec3 {
     }
 }
 
+impl ops::Index<usize> for Vec3 {
+    type Output = f64;
+    fn index(&self, index: usize) -> &f64{
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => &0.,
+        }
+    }
+}
+
+
 impl ops::Add for Vec3 {
     type Output = Vec3;
 
