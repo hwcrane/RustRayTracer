@@ -13,5 +13,6 @@ cargo run --release
 
 ## Result 
 
-This is the final render
+Here is the final render:
+
 ![out.png](./out.png)
