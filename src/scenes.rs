@@ -8,7 +8,7 @@ use crate::texture::{Texture};
 pub fn random_scene() -> HittableList {
     let mut world = HittableList::default();
     
-    let ground_mat = Material::Lambertian {texture: Texture::Checker{odd: Vec3::new(1., 1., 1.), even: Vec3::new(0., 0., 0.)}};
+    let ground_mat = Material::Lambertian {texture: Texture::SolidColour{colour_value: Vec3::new(0.5, 0.5, 0.5)}};
     world.add(Box::new(Sphere::new(Vec3::new(0., -1000., 0.), 1000., ground_mat)));
 
     for a in -11..11 {
